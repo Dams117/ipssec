@@ -1,0 +1,18 @@
+#include <tunables/global>
+
+/sbin/dhcpcd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  capability net_admin,
+  capability net_bind_service,
+  capability net_raw,
+  capability dac_override,
+  
+  /etc/dhcpcd.conf r,
+  /sbin/dhcpcd mr,
+  /var/lib/dhcpcd/** rw,
+  /{,var/}run/dhcpcd.pid rw,
+  /{,var/}run/dhcpcd.sock rw,
+}
+

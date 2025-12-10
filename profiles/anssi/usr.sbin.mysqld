@@ -1,0 +1,23 @@
+#include <tunables/global>
+
+/usr/sbin/mysqld {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+  #include <abstractions/mysql>
+
+  capability dac_override,
+  capability setgid,
+  capability setuid,
+  capability sys_resource,
+
+  /etc/hosts.allow r,
+  /etc/hosts.deny r,
+  /etc/mysql/** r,
+  /usr/sbin/mysqld mr,
+  /var/lib/mysql/** rwk,
+  /var/log/mysql/** rw,
+  /{,var/}run/mysqld/mysqld.pid rw,
+  /{,var/}run/mysqld/mysqld.sock w,
+}
+

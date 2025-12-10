@@ -1,0 +1,110 @@
+#include <tunables/global>
+
+/usr/sbin/sshd {
+  #include <abstractions/authentication>
+  #include <abstractions/base>
+  #include <abstractions/consoles>
+  #include <abstractions/nameservice>
+  #include <abstractions/wutmp>
+  #include <abstractions/dbus> 
+
+  capability audit_control,
+  capability chown,
+  capability dac_override,
+  capability dac_read_search,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+  capability sys_resource,
+  capability sys_tty_config,
+
+  # Shell executions for login
+  /bin/bash rUx,
+  /bin/sh rUx,
+  /bin/dash rUx,
+  /usr/bin/bash rUx,
+  /usr/bin/sh rUx,
+  
+  # SSHD internals and configs
+  /etc/ssh/** r,
+  /etc/motd r,
+  /etc/issue r,
+  /etc/issue.net r,
+  /etc/hosts.allow r,
+  /etc/hosts.deny r,
+  
+  # Auth & Keys
+  @{HOME}/.ssh/authorized_keys{,2} r,
+  @{HOME}/.ssh/ r,
+  /var/lib/sss/pubconf/known_hosts r,
+  
+  # Systemd notification
+  /{,var/}run/systemd/notify w,
+  
+  # PTY and Logs
+  /dev/ptmx rw,
+  /dev/pts/[0-9]* rw,
+  /dev/urandom r,
+  /var/log/** rw,
+  
+  # Runtime files
+  /{,var/}run/sshd{,.init}.pid wl,
+  /{,var/}run/sshd.sock w,
+  /run/sshd/ w,
+  /run/sshd/* rw,
+
+  # OOM Score adjustment
+  /proc/*/oom_score_adj rw,
+  /proc/*/oom_adj rw,
+
+  # PAM and specialized auth
+  /sbin/unix_chkpwd Px,
+  /usr/sbin/unix_chkpwd Px,
+
+  ^AUTHENTICATED {
+    #include <abstractions/authentication>
+    #include <abstractions/consoles>
+    #include <abstractions/nameservice>
+    #include <abstractions/wutmp>
+    #include <abstractions/dbus>
+    
+    capability setgid,
+    capability setuid,
+    capability sys_tty_config,
+    capability chown,
+    
+    /dev/log w,
+    /dev/ptmx rw,
+    /etc/default/passwd r,
+    /etc/localtime r,
+    /etc/login.defs r,
+    /etc/motd r,
+    /etc/environment r,
+  }
+
+  ^EXEC {
+    #include <abstractions/base>
+    /bin/bash Ux,
+    /bin/sh Ux,
+    /bin/dash Ux,
+    /usr/bin/bash Ux,
+    /usr/bin/sh Ux,
+    /usr/bin/scp Ux,
+    /usr/bin/sftp Ux,
+    /sbin/nologin Ux,
+    /usr/sbin/nologin Ux,
+  }
+
+  ^PRIVSEP {
+    #include <abstractions/base>
+    #include <abstractions/nameservice>
+    capability setgid,
+    capability setuid,
+    capability sys_chroot,
+    /proc/*/oom_score_adj rw,
+  }
+}

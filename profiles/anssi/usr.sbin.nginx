@@ -1,0 +1,28 @@
+#include <tunables/global>
+
+/usr/sbin/nginx {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/nis>
+  #include <abstractions/openssl>
+  #include <abstractions/ssl_keys>
+
+  capability dac_override,
+  capability dac_read_search,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  /etc/nginx/** r,
+  /etc/ssl/** r,
+  /usr/sbin/nginx mr,
+  /usr/share/nginx/html/* r,
+  /var/log/nginx/* w,
+  /var/www/** r,
+  /{,var/}run/nginx.pid rw,
+  
+  # Site content - adjust as needed
+  /var/www/html/** r,
+}
+

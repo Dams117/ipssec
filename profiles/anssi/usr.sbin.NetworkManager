@@ -1,0 +1,24 @@
+#include <tunables/global>
+
+/usr/sbin/NetworkManager {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/dbus>
+
+  capability dac_override,
+  capability kill,
+  capability net_admin,
+  capability net_bind_service,
+  capability net_raw,
+  capability setgid,
+  capability setuid,
+  capability sys_admin,
+  capability sys_module,
+
+  /etc/NetworkManager/** r,
+  /usr/sbin/NetworkManager mr,
+  /var/lib/NetworkManager/** rw,
+  /{,var/}run/NetworkManager/** rw,
+  /usr/lib/NetworkManager/** ix,
+}
+

@@ -1,0 +1,28 @@
+#include <tunables/global>
+
+/usr/sbin/apache2 {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/ssl_keys>
+  #include <abstractions/web-data>
+  #include <abstractions/php>
+
+  capability dac_override,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_chroot,
+
+  /etc/apache2/** r,
+  /etc/mime.types r,
+  /usr/sbin/apache2 mr,
+  /var/log/apache2/** rw,
+  /var/www/** r,
+  /{,var/}run/apache2/** rw,
+  /{,var/}run/apache2.pid rw,
+  
+  # Allow php execution if needed, adjust based on php version
+  /usr/bin/php* ix,
+}
+

@@ -1,0 +1,26 @@
+#include <tunables/global>
+
+/usr/sbin/cupsd {
+  #include <abstractions/base>
+  #include <abstractions/authentication>
+  #include <abstractions/nameservice>
+  #include <abstractions/cups>
+
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+
+  /etc/cups/** rw,
+  /etc/printcap r,
+  /usr/sbin/cupsd mr,
+  /var/cache/cups/** rw,
+  /var/log/cups/** rw,
+  /var/spool/cups/** rw,
+  /{,var/}run/cups/** rw,
+}
+

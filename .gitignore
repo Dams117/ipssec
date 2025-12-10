@@ -1,0 +1,13 @@
+# Backups système
+*.backup_*
+anssi.backups/
+
+# Fichiers temporaires
+*.tmp
+*.log
+*~
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+

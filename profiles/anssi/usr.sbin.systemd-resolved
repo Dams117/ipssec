@@ -1,0 +1,18 @@
+#include <tunables/global>
+
+/lib/systemd/systemd-resolved {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/dbus>
+
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability setpcap,
+
+  /etc/systemd/resolved.conf r,
+  /lib/systemd/systemd-resolved mr,
+  /run/systemd/resolve/** rw,
+  /var/tmp/systemd-private-*-resolved-*/** rw,
+}
+

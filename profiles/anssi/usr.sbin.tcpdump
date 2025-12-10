@@ -1,0 +1,38 @@
+#include <tunables/global>
+
+/usr/sbin/tcpdump {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+
+  capability net_raw,
+  capability net_admin,
+  capability setuid,
+  capability setgid,
+  capability dac_override,
+
+  # Network access
+  network raw,
+  network packet,
+
+  # Binary
+  /usr/sbin/tcpdump mr,
+
+  # Configuration and reading
+  /etc/hosts.allow r,
+  /etc/hosts.deny r,
+  /etc/ethers r,
+  /etc/rpc r,
+  /etc/protocols r,
+  /etc/services r,
+
+  # Pcap writing (restrict to specific directories if needed)
+  /var/log/tcpdump/ w,
+  /var/log/tcpdump/** rw,
+  /tmp/** rw,
+  
+  # Reading pcap files
+  /**.pcap r,
+  /**.cap r,
+}
+

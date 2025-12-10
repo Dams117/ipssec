@@ -1,0 +1,28 @@
+#include <tunables/global>
+
+/usr/bin/man {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/consoles>
+
+  capability setuid,
+  capability setgid,
+
+  /usr/bin/man mr,
+  /usr/bin/groff ix,
+  /usr/bin/nroff ix,
+  /usr/bin/less ix,
+  /bin/gzip ix,
+  /usr/bin/gzip ix,
+  /bin/bzip2 ix,
+  
+  /etc/manpath.config r,
+  /etc/man_db.conf r,
+  /etc/groff/** r,
+  
+  /usr/share/man/** r,
+  /usr/local/share/man/** r,
+  /var/cache/man/** rw,
+  /tmp/** rw,
+}
+
