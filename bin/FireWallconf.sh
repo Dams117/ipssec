@@ -433,3 +433,156 @@ function interactive_mode() {
             else
                 echo "ERREUR: Format IP/CIDR invalide. Veuillez réessayer."
             fi
+ 
+        else # country/WORLD
+            TARGET_PROMPT="Entrez le code pays (ex: FR, DE) ou **WORLD** pour tout le trafic public : "
+            read -p "$TARGET_PROMPT" TARGET_INPUT
+            TARGET_INPUT=$(echo "$TARGET_INPUT" | tr -d ' ' | tr '[:lower:]' '[:upper:]')
+           
+            if [[ "$TARGET_INPUT" =~ ^[A-Z]{2}$ || "$TARGET_INPUT" = "WORLD" ]]; then
+                    VALID_TARGET=1
+            else
+                    echo "ERREUR: Le code doit être un code pays de deux lettres ou 'WORLD'. Veuillez réessayer."
+            fi
+        fi
+    done
+    TARGET="$TARGET_INPUT"
+ 
+    echo "--- Récapitulatif ---"
+    echo "Action : **$ACTION**"
+    echo "Format : **$BLOCKFORMAT**"
+    echo "Cible : **$TARGET**"
+    echo "---------------------"
+ 
+    read -p "Êtes-vous sûr de vouloir continuer avec ces paramètres ? [oui/non] : " CONFIRM
+    CONFIRM=$(echo "$CONFIRM" | tr '[:upper:]' '[:lower:]')
+   
+    if [[ "$CONFIRM" = "oui" ]]; then
+        echo "Démarrage du processus. Soyez patient pour $TARGET..."
+        core "$ACTION" "$BLOCKFORMAT" "$TARGET" "$WORKPLACE"
+    else
+        echo "Opération annulée par l'utilisateur."
+    fi
+   
+    return
+}
+ 
+# --- Fonction de Menu Principal (Point d'entrée) ---
+ 
+function main_menu() {
+    setup_ipv4_base_rules
+   
+    while true; do
+        echo "=============================================="
+        echo "Pare-feu - Menu Principal"
+        echo "=============================================="
+        echo "1. Gestion des Ports (Ouverture/Fermeture)"
+        echo "2. Blocage/Déblocage (IP, CIDR, Pays/WORLD)"
+        echo "3. Afficher l'état du Pare-feu (iptables -nL)"
+        echo "4. Réinitialiser le Pare-feu aux règles de base"
+        echo "5. Quitter"
+        echo "----------------------------------------------"
+ 
+        read -p "Votre choix [1-5] : " CHOICE
+ 
+        case "$CHOICE" in
+            1)
+                port_management_mode
+                ;;
+            2)
+                interactive_mode
+                ;;
+            3)
+                ./brainfw.sh show
+                ;;
+            4)
+                ./brainfw.sh reset
+                ;;
+            5)
+                echo "Sauvegarde finale des règles avant de quitter..."
+                save_user_rules
+                echo "Arrêt du Pare-feu. Au revoir !"
+                exit 0
+                ;;
+            *)
+                echo "Choix invalide. Veuillez saisir un nombre entre 1 et 5."
+                ;;
+        esac
+    done
+}
+ 
+ 
+# --- Logique d'entrée : Fonction ACTION (Appel final) ---
+ 
+function action() {
+    ACTION="$1"
+    BLOCKFORMAT="$2"
+    TARGET="$3"
+    WORKPLACE="$4"
+   
+    check_workplace "$WORKPLACE"
+ 
+    if [[ "$ACTION" = "show" ]]
+    then
+        echo "========================================================================="
+        echo "Affichage des règles iptables actuelles :"
+        echo "========================================================================="
+        iptables -nL
+        echo "========================================================================="
+        exit 0
+ 
+    elif [[ "$ACTION" = "reset" ]]
+    then
+        echo "========================================================================="
+        echo "Réinitialisation du pare-feu aux règles de base sécuritaires..."
+        echo "========================================================================="
+        setup_ipv4_base_rules
+        echo "Suppression du fichier de sauvegarde ($RULES_FILE)..."
+        rm -f "$RULES_FILE" 2>/dev/null
+        echo "Réinitialisation terminée. Vérifiez avec ./brainfw.sh show."
+        exit 0
+   
+    elif [[ "$ACTION" = "manageports" ]]
+    then
+        port_management_mode
+        exit 0
+       
+    elif [[ "$ACTION" = "interactive" ]] || [[ -z "$ACTION" ]]
+    then
+        main_menu
+        exit 0
+   
+    elif [[ "$ACTION" = "block" || "$ACTION" = "unblock" ]]
+    then
+        setup_ipv4_base_rules
+        if [[ -z "$BLOCKFORMAT" ]] || [[ -z "$TARGET" ]]; then
+            echo "ERREUR: Les arguments {blockformat} et {target} sont requis pour l'action '$ACTION'."
+            echo "Utilisez './brainfw.sh help' pour l'aide."
+            exit 1
+        fi
+        core "$ACTION" "$BLOCKFORMAT" "$TARGET" "$WORKPLACE"
+       
+    elif [[ "$ACTION" = "help" ]]
+    then
+        echo "========================================================================="
+        echo "Pare-feu - Aide et Syntaxe"
+        echo "========================================================================="
+        echo "Mode Guidé : Lancez le script sans argument ou avec 'interactive' pour le Menu Principal."
+        echo "             -> $0"
+        echo "-------------------------------------------------------------------------"
+        echo "Actions Simples (Mode Ligne de Commande) : $0 {ACTION} {FORMAT} {CIBLE}"
+        echo "-------------------------------------------------------------------------"
+        echo "Exemples : $0 block country CN"
+        echo "         : $0 unblock ip 192.168.1.100"
+        echo "         : $0 block country WORLD"
+        echo "========================================================================="
+       
+    else
+        echo "Action '$ACTION' invalide. Utilisez 'help' pour l'aide."
+        exit 1
+    fi
+}
+ 
+# --- Démarrage du script (L'appel final) ---
+ 
+action "$ACTION" "$BLOCKFORMAT" "$TARGET" "$WORKPLACE"
